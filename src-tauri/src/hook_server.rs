@@ -102,9 +102,7 @@ async fn handle_hook(
     StatusCode::OK
 }
 
-fn send_os_notification(app_handle: &AppHandle, payload: &HookPayload) {
-    use tauri_plugin_notification::NotificationExt;
-
+fn send_os_notification(_app_handle: &AppHandle, payload: &HookPayload) {
     let title = payload
         .title
         .clone()
@@ -114,8 +112,26 @@ fn send_os_notification(app_handle: &AppHandle, payload: &HookPayload) {
         .clone()
         .unwrap_or_else(|| "入力待ちです".to_string());
 
-    let _ = app_handle.notification().builder()
-        .title(&title)
-        .body(&body)
-        .show();
+    // Try notify-send (Linux with notification daemon)
+    if std::process::Command::new("notify-send")
+        .arg(&title)
+        .arg(&body)
+        .arg("--app-name=ccnotify")
+        .output()
+        .map(|o| o.status.success())
+        .unwrap_or(false)
+    {
+        return;
+    }
+
+    // Fallback: PowerShell toast (WSL2 → Windows)
+    let ps_script = format!(
+        r#"Add-Type -AssemblyName System.Windows.Forms; $n = New-Object System.Windows.Forms.NotifyIcon; $n.Icon = [System.Drawing.SystemIcons]::Information; $n.Visible = $true; $n.ShowBalloonTip(5000, '{}', '{}', 'Info'); Start-Sleep -Seconds 6; $n.Dispose()"#,
+        title.replace('\'', "''"),
+        body.replace('\'', "''"),
+    );
+    let _ = std::process::Command::new("powershell.exe")
+        .arg("-Command")
+        .arg(&ps_script)
+        .spawn();
 }
