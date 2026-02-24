@@ -16,3 +16,7 @@ export async function getTaskSummary(
 export async function dismissSession(sessionId: string): Promise<void> {
   return invoke("dismiss_session", { sessionId });
 }
+
+export async function quitApp(): Promise<void> {
+  return invoke("quit_app");
+}

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useSessions } from "./hooks/useSessions";
 import { SessionList } from "./components/SessionList";
 import { Settings } from "./components/Settings";
+import { quitApp } from "./lib/ipc";
 
 type View = "sessions" | "settings";
 
@@ -60,22 +61,39 @@ function App() {
             </span>
           )}
         </div>
-        <button
-          onClick={() => setView("settings")}
-          style={{
-            background: "none",
-            border: "none",
-            cursor: "pointer",
-            fontSize: "16px",
-            color: "#666",
-            padding: "0 4px",
-            // @ts-expect-error - webkit specific
-            WebkitAppRegion: "no-drag",
-          }}
-          title="Settings"
-        >
-          &#9881;
-        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: "4px",
+          // @ts-expect-error - webkit specific
+          WebkitAppRegion: "no-drag",
+        }}>
+          <button
+            onClick={() => setView("settings")}
+            style={{
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              fontSize: "16px",
+              color: "#666",
+              padding: "0 4px",
+            }}
+            title="Settings"
+          >
+            &#9881;
+          </button>
+          <button
+            onClick={() => quitApp()}
+            style={{
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              fontSize: "14px",
+              color: "#999",
+              padding: "0 4px",
+            }}
+            title="Quit"
+          >
+            &#x2715;
+          </button>
+        </div>
       </div>
 
       {/* Session List */}

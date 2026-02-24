@@ -1,9 +1,14 @@
 use std::sync::Arc;
-use tauri::State;
+use tauri::{AppHandle, State};
 
 use crate::models::SessionInfo;
 use crate::state::AppState;
 use crate::transcript::read_task_summary;
+
+#[tauri::command]
+pub fn quit_app(app: AppHandle) {
+    app.exit(0);
+}
 
 #[tauri::command]
 pub async fn get_sessions(state: State<'_, Arc<AppState>>) -> Result<Vec<SessionInfo>, String> {

@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use tauri::image::Image;
+use tauri::menu::{Menu, MenuItem};
 use tauri::tray::TrayIconBuilder;
 use tauri::{AppHandle, Manager};
 
@@ -23,9 +24,26 @@ pub fn setup_tray(app: &AppHandle) -> tauri::Result<()> {
     let icon_data = make_icon(128, 128, 128); // gray = idle
     let icon = Image::new_owned(icon_data, 16, 16);
 
+    let show_item = MenuItem::with_id(app, "show", "Show", true, None::<&str>)?;
+    let quit_item = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
+    let menu = Menu::with_items(app, &[&show_item, &quit_item])?;
+
     let _tray = TrayIconBuilder::with_id("main-tray")
         .icon(icon)
         .tooltip("ccnotify - idle")
+        .menu(&menu)
+        .on_menu_event(|app, event| match event.id.as_ref() {
+            "show" => {
+                if let Some(window) = app.get_webview_window("main") {
+                    let _ = window.show();
+                    let _ = window.set_focus();
+                }
+            }
+            "quit" => {
+                app.exit(0);
+            }
+            _ => {}
+        })
         .on_tray_icon_event(|tray, event| {
             if let tauri::tray::TrayIconEvent::Click {
                 button: tauri::tray::MouseButton::Left,
